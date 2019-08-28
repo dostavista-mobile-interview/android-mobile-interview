@@ -17,28 +17,24 @@ import java.util.List;
 import data.Injection;
 import ru.dostavista.android.data.Order;
 import ru.dostavista.android.data.Repository;
+import ru.dostavista.android.data.remote.OrderParams;
 
 public class OrdersFragment extends Fragment {
 
     private static String TAG = OrdersFragment.class.getSimpleName();
 
-    private Repository<Order> ordersRepository;
+    private Repository<OrderParams, List<Order>> ordersRepository;
 
-    SwipeRefreshLayout srl;
+    private SwipeRefreshLayout srl;
 
-    RecyclerView.LayoutManager lm;
+    private RecyclerView.LayoutManager lm;
 
     private RecyclerView recyclerView;
 
     private OrdersAdapter ordersAdapter;
 
     private String lastId = null;
-
-    public static OrdersFragment newInstance() {
-        return new OrdersFragment();
-    }
-
-    private Repository.RepositoryCallback callback = new Repository.RepositoryCallback<Order>() {
+    private Repository.RepositoryCallback<List<Order>> callback = new Repository.RepositoryCallback<List<Order>>() {
 
         @Override
         public void onOrdersLoaded(List<Order> orders, boolean isNextPage) {
@@ -48,12 +44,16 @@ public class OrdersFragment extends Fragment {
         }
 
         @Override
-        public void onOrdersNotAvailable() {
+        public void onError() {
             Log.d(TAG, "orders load error");
             srl.setRefreshing(false);
         }
 
     };
+
+    public static OrdersFragment newInstance() {
+        return new OrdersFragment();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +87,12 @@ public class OrdersFragment extends Fragment {
         fetchData();
     }
 
+    @Override
+    public void onDestroyView() {
+        ordersRepository.dispose();
+        super.onDestroyView();
+    }
+
     private void setupUpOnScroll() {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -107,7 +113,7 @@ public class OrdersFragment extends Fragment {
         if (hasNextPage) {
             ordersAdapter.showLoading(true);
             lastId = nextPageId;
-            ordersRepository.getData(Integer.parseInt(nextPageId), callback);
+            ordersRepository.getData(new OrderParams(Integer.parseInt(nextPageId), null), callback);
         } else {
             ordersAdapter.showLoading(false);
         }
@@ -115,7 +121,7 @@ public class OrdersFragment extends Fragment {
 
     private void fetchData() {
         srl.setRefreshing(true);
-        ordersRepository.getData(null, callback);
+        ordersRepository.getData(new OrderParams(null, null), callback);
 
     }
 

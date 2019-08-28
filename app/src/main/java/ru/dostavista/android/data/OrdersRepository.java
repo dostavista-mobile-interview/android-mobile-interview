@@ -8,9 +8,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import ru.dostavista.android.data.remote.OrderParams;
 import ru.dostavista.android.data.remote.OrdersRemoteDataSource;
 
-public class OrdersRepository implements Repository<Order> {
+public class OrdersRepository implements Repository<OrderParams, List<Order>> {
 
     private static OrdersRepository INSTANCE = null;
 
@@ -32,11 +33,11 @@ public class OrdersRepository implements Repository<Order> {
     }
 
     @Override
-    public void getData(final Integer sinceId, final RepositoryCallback<Order> repositoryCallback) {
-        final boolean isNextPage = sinceId != null;
-        ordersRemoteDataSource.getOrders(sinceId, null, new OrdersDataSource.LoadOrdersCallback() {
+    public void getData(final OrderParams params, final RepositoryCallback<List<Order>> repositoryCallback) {
+        final boolean isNextPage = params.sinceId != null;
+        ordersRemoteDataSource.getData(params, new DataSource.Callback<List<Order>>() {
             @Override
-            public void onOrdersLoaded(final List<Order> orders) {
+            public void onDataLoaded(final List<Order> orders) {
                 cachedOrders.addAll(orders);
                 handler.post(new Runnable() {
                     @Override
@@ -47,14 +48,14 @@ public class OrdersRepository implements Repository<Order> {
             }
 
             @Override
-            public void onOrdersNotAvailable() {
+            public void onError() {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (cachedOrders != null && sinceId == null) {
+                        if (cachedOrders != null && params.sinceId == null) {
                             repositoryCallback.onOrdersLoaded(new ArrayList<>(cachedOrders), false);
                         } else {
-                            repositoryCallback.onOrdersNotAvailable();
+                            repositoryCallback.onError();
                         }
                     }
                 });
@@ -62,4 +63,8 @@ public class OrdersRepository implements Repository<Order> {
         });
     }
 
+    @Override
+    public void dispose() {
+        ordersRemoteDataSource.dispose();
+    }
 }

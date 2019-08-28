@@ -1,17 +1,17 @@
 package ru.dostavista.android.data;
 
-import java.util.List;
+import ru.dostavista.android.util.Disposable;
 
-public interface Repository<T> {
+public interface Repository<P, T> extends Disposable {
 
     interface RepositoryCallback<T> {
 
-        void onOrdersLoaded(List<T> orders, boolean isNextPage);
+        void onOrdersLoaded(T data, boolean isNextPage);
 
-        void onOrdersNotAvailable();
+        void onError();
 
     }
 
-    void getData(Integer sinceId, RepositoryCallback<T> repositoryCallback);
+    void getData(P params, RepositoryCallback<T> repositoryCallback);
 
 }
