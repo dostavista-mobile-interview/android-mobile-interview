@@ -13,6 +13,10 @@ import ru.dostavista.android.data.Order;
 
 public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.OrderViewHolder> {
 
+    public List<Order> getOrders() {
+        return orders;
+    }
+
     private List<Order> orders;
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
@@ -57,6 +61,14 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.OrderViewH
 
     public OrdersAdapter setOrders(List<Order> orders) {
         this.orders = orders;
+        notifyDataSetChanged();
         return this;
     }
+
+    public void addOrders(List<Order> orders) {
+        int oldSize = orders.size();
+        this.orders.addAll(orders);
+        notifyItemRangeInserted(oldSize - 1, orders.size() - 1);
+    }
+
 }
