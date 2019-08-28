@@ -11,5 +11,6 @@ public interface OrdersDataSource {
         void onOrdersNotAvailable();
     }
 
-    void getOrders(LoadOrdersCallback loadOrdersCallback);
+    void getOrders(Integer sinceId,Integer limit, LoadOrdersCallback loadOrdersCallback);
+
 }

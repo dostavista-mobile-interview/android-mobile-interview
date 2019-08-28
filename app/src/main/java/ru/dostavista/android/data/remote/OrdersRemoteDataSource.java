@@ -1,6 +1,7 @@
 package ru.dostavista.android.data.remote;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,12 +25,18 @@ public class OrdersRemoteDataSource implements OrdersDataSource {
     }
 
     @Override
-    public void getOrders(final LoadOrdersCallback loadOrdersCallback) {
+    public void getOrders(final Integer sinceId, final Integer limit, final LoadOrdersCallback loadOrdersCallback) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                Request ordersRequest = new Request("mobile-interview-api.php");
+                String endpoint = "mobile-interview-api.php";
+                if (sinceId != null) endpoint += "?since_id=" + sinceId;
+                if (limit != null) endpoint += "&limit=" + limit;
+                Request ordersRequest = new Request(endpoint);
                 Response response = httpClient.execute(ordersRequest);
+                String tag = "network";
+                Log.d(tag, "Request: " + ordersRequest.getPath());
+                Log.d(tag, "Response: " + response.getJson());
                 if (response.isSuccess()) {
                     List<Order> newOrders = new ArrayList<>();
                     JSONObject jsonObject = response.getJson();

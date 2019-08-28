@@ -7,15 +7,18 @@ import java.util.List;
 
 import ru.dostavista.android.data.remote.OrdersRemoteDataSource;
 
-public class OrdersRepository implements OrdersDataSource {
+public class OrdersRepository implements Repository {
 
     private static OrdersRepository INSTANCE = null;
-
-    private OrdersRemoteDataSource ordersRemoteDataSource;
-
     Handler handler = new Handler(Looper.getMainLooper());
-
+    private OrdersRemoteDataSource ordersRemoteDataSource;
     private List<Order> cachedOrders;
+
+
+
+    public OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
+        this.ordersRemoteDataSource = ordersRemoteDataSource;
+    }
 
     public static OrdersRepository getInstance(OrdersRemoteDataSource ordersRemoteDataSource) {
         if (INSTANCE == null) {
@@ -24,20 +27,16 @@ public class OrdersRepository implements OrdersDataSource {
         return INSTANCE;
     }
 
-    public OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
-        this.ordersRemoteDataSource = ordersRemoteDataSource;
-    }
-
     @Override
-    public void getOrders(final LoadOrdersCallback loadOrdersCallback) {
-        ordersRemoteDataSource.getOrders(new LoadOrdersCallback() {
+    public void getOrders(final Integer sinceId, final LoadOrdersCallback loadOrdersCallback) {
+        ordersRemoteDataSource.getOrders(sinceId, null, new OrdersDataSource.LoadOrdersCallback() {
             @Override
             public void onOrdersLoaded(final List<Order> orders) {
                 cachedOrders = orders;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadOrdersCallback.onOrdersLoaded(orders);
+                        loadOrdersCallback.onOrdersLoaded(orders,sinceId != null);
                     }
                 });
             }
