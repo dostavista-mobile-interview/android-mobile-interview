@@ -89,10 +89,15 @@ public class OrdersFragment extends Fragment {
     }
 
     private void loadNextPage() {
-        String nextPageId = ordersAdapter.getOrders().get(ordersAdapter.getItemCount() - 1).getOrderId();
-        if (!nextPageId.equals(lastId)) {
+        List<Order> orders = ordersAdapter.getOrders();
+        String nextPageId = orders.get(orders.size() - 1).getOrderId();
+        boolean hasNextPage = !nextPageId.equals(lastId);
+        if (hasNextPage) {
+            ordersAdapter.showLoading(true);
             lastId = nextPageId;
             ordersRepository.getOrders(Integer.parseInt(nextPageId), callback);
+        } else {
+            ordersAdapter.showLoading(false);
         }
     }
 
