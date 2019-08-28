@@ -1,6 +1,8 @@
 package ru.dostavista.android;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.Collections;
 import java.util.List;
 
 import data.Injection;
@@ -53,7 +54,6 @@ public class OrdersFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ordersRepository = Injection.provideOrdersRepository();
-
     }
 
     @Override
@@ -63,7 +63,7 @@ public class OrdersFragment extends Fragment {
         recyclerView = root.findViewById(R.id.recyclerView);
         lm = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(lm);
-        ordersAdapter = new OrdersAdapter(Collections.<Order>emptyList());
+        ordersAdapter = new OrdersAdapter();
         recyclerView.setAdapter(ordersAdapter);
         srl = root.findViewById(R.id.swipeToRefresh);
         srl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -74,6 +74,12 @@ public class OrdersFragment extends Fragment {
         });
         setupUpOnScroll();
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        fetchData();
     }
 
     private void setupUpOnScroll() {
@@ -99,12 +105,6 @@ public class OrdersFragment extends Fragment {
         } else {
             ordersAdapter.showLoading(false);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        fetchData();
     }
 
     private void fetchData() {

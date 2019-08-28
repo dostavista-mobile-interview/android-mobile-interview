@@ -30,10 +30,6 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
     private boolean showLoading = false;
 
-    public OrdersAdapter(List<Order> orders) {
-        this.orders = orders;
-    }
-
     @NonNull
     @Override
     public OrdersAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
