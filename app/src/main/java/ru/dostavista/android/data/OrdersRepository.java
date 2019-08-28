@@ -3,19 +3,27 @@ package ru.dostavista.android.data;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
+import ru.dostavista.android.data.remote.OrderParams;
 import ru.dostavista.android.data.remote.OrdersRemoteDataSource;
 
-public class OrdersRepository implements OrdersDataSource {
+public class OrdersRepository implements Repository<OrderParams, List<Order>> {
 
     private static OrdersRepository INSTANCE = null;
 
     private OrdersRemoteDataSource ordersRemoteDataSource;
 
-    Handler handler = new Handler(Looper.getMainLooper());
+    private Handler handler = new Handler(Looper.getMainLooper());
 
-    private List<Order> cachedOrders;
+    private Set<Order> cachedOrders = new LinkedHashSet<>();
+
+    private OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
+        this.ordersRemoteDataSource = ordersRemoteDataSource;
+    }
 
     public static OrdersRepository getInstance(OrdersRemoteDataSource ordersRemoteDataSource) {
         if (INSTANCE == null) {
@@ -24,33 +32,39 @@ public class OrdersRepository implements OrdersDataSource {
         return INSTANCE;
     }
 
-    public OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
-        this.ordersRemoteDataSource = ordersRemoteDataSource;
-    }
-
     @Override
-    public void getOrders(final LoadOrdersCallback loadOrdersCallback) {
-        ordersRemoteDataSource.getOrders(new LoadOrdersCallback() {
+    public void getData(final OrderParams params, final RepositoryCallback<List<Order>> repositoryCallback) {
+        final boolean isNextPage = params.sinceId != null;
+        ordersRemoteDataSource.getData(params, new DataSource.Callback<List<Order>>() {
             @Override
-            public void onOrdersLoaded(final List<Order> orders) {
-                cachedOrders = orders;
+            public void onDataLoaded(final List<Order> orders) {
+                cachedOrders.addAll(orders);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadOrdersCallback.onOrdersLoaded(orders);
+                        repositoryCallback.onOrdersLoaded(orders, isNextPage);
                     }
                 });
             }
 
             @Override
-            public void onOrdersNotAvailable() {
+            public void onError() {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadOrdersCallback.onOrdersNotAvailable();
+                        if (cachedOrders != null && params.sinceId == null) {
+                            repositoryCallback.onOrdersLoaded(new ArrayList<>(cachedOrders), false);
+                        } else {
+                            repositoryCallback.onError();
+                        }
                     }
                 });
             }
         });
+    }
+
+    @Override
+    public void dispose() {
+        ordersRemoteDataSource.dispose();
     }
 }

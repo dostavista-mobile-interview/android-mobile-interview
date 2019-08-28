@@ -9,7 +9,7 @@ import ru.dostavista.android.util.InputStreamUtils;
 
 public class HttpClient {
 
-    private static String API_URL = "https://devtools.dostavista.ru/";
+    private static String API_URL = "https://externalwebhooks.dostavista.net/";
     private static final int DEFAULT_CONNECTION_TIMEOUT = 15000;
     private static final int DEFAULT_READ_TIMEOUT = 60000;
 
