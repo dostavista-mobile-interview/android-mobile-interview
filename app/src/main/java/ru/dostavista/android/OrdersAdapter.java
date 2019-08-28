@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.Collections;
 import java.util.List;
 
 import ru.dostavista.android.data.Order;
@@ -26,7 +27,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
     }
 
-    private List<Order> orders;
+    private List<Order> orders = Collections.emptyList();
 
     private boolean showLoading = false;
 

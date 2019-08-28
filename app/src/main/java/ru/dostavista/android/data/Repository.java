@@ -2,15 +2,16 @@ package ru.dostavista.android.data;
 
 import java.util.List;
 
-public interface Repository {
+public interface Repository<T> {
 
-    interface LoadOrdersCallback {
+    interface RepositoryCallback<T> {
 
-        void onOrdersLoaded(List<Order> orders, boolean isNextPage);
+        void onOrdersLoaded(List<T> orders, boolean isNextPage);
 
         void onOrdersNotAvailable();
+
     }
 
-    void getOrders(Integer sinceId, LoadOrdersCallback loadOrdersCallback);
+    void getData(Integer sinceId, RepositoryCallback<T> repositoryCallback);
 
 }

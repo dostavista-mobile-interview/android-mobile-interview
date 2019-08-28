@@ -3,20 +3,24 @@ package ru.dostavista.android.data;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.dostavista.android.data.remote.OrdersRemoteDataSource;
 
-public class OrdersRepository implements Repository {
+public class OrdersRepository implements Repository<Order> {
 
     private static OrdersRepository INSTANCE = null;
-    Handler handler = new Handler(Looper.getMainLooper());
+
     private OrdersRemoteDataSource ordersRemoteDataSource;
-    private List<Order> cachedOrders;
 
+    private Handler handler = new Handler(Looper.getMainLooper());
 
+    private Set<Order> cachedOrders = new LinkedHashSet<>();
 
-    public OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
+    private OrdersRepository(OrdersRemoteDataSource ordersRemoteDataSource) {
         this.ordersRemoteDataSource = ordersRemoteDataSource;
     }
 
@@ -28,15 +32,16 @@ public class OrdersRepository implements Repository {
     }
 
     @Override
-    public void getOrders(final Integer sinceId, final LoadOrdersCallback loadOrdersCallback) {
+    public void getData(final Integer sinceId, final RepositoryCallback<Order> repositoryCallback) {
+        final boolean isNextPage = sinceId != null;
         ordersRemoteDataSource.getOrders(sinceId, null, new OrdersDataSource.LoadOrdersCallback() {
             @Override
             public void onOrdersLoaded(final List<Order> orders) {
-                cachedOrders = orders;
+                cachedOrders.addAll(orders);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadOrdersCallback.onOrdersLoaded(orders,sinceId != null);
+                        repositoryCallback.onOrdersLoaded(orders, isNextPage);
                     }
                 });
             }
@@ -46,10 +51,15 @@ public class OrdersRepository implements Repository {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        loadOrdersCallback.onOrdersNotAvailable();
+                        if (cachedOrders != null && sinceId == null) {
+                            repositoryCallback.onOrdersLoaded(new ArrayList<>(cachedOrders), false);
+                        } else {
+                            repositoryCallback.onOrdersNotAvailable();
+                        }
                     }
                 });
             }
         });
     }
+
 }

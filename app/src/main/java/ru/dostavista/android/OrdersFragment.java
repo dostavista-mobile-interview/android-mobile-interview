@@ -16,21 +16,29 @@ import java.util.List;
 
 import data.Injection;
 import ru.dostavista.android.data.Order;
-import ru.dostavista.android.data.OrdersRepository;
 import ru.dostavista.android.data.Repository;
 
 public class OrdersFragment extends Fragment {
 
     private static String TAG = OrdersFragment.class.getSimpleName();
+
+    private Repository<Order> ordersRepository;
+
     SwipeRefreshLayout srl;
+
     RecyclerView.LayoutManager lm;
+
     private RecyclerView recyclerView;
-    private OrdersRepository ordersRepository;
+
     private OrdersAdapter ordersAdapter;
 
     private String lastId = null;
 
-    private Repository.LoadOrdersCallback callback = new Repository.LoadOrdersCallback() {
+    public static OrdersFragment newInstance() {
+        return new OrdersFragment();
+    }
+
+    private Repository.RepositoryCallback callback = new Repository.RepositoryCallback<Order>() {
 
         @Override
         public void onOrdersLoaded(List<Order> orders, boolean isNextPage) {
@@ -44,11 +52,8 @@ public class OrdersFragment extends Fragment {
             Log.d(TAG, "orders load error");
             srl.setRefreshing(false);
         }
-    };
 
-    public static OrdersFragment newInstance() {
-        return new OrdersFragment();
-    }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,12 +101,13 @@ public class OrdersFragment extends Fragment {
 
     private void loadNextPage() {
         List<Order> orders = ordersAdapter.getOrders();
-        String nextPageId = orders.get(orders.size() - 1).getOrderId();
-        boolean hasNextPage = !nextPageId.equals(lastId);
+        Order lastOrder = !orders.isEmpty() ? orders.get(orders.size() - 1) : null;
+        String nextPageId = lastOrder != null ? lastOrder.getOrderId() : null;
+        boolean hasNextPage = nextPageId != null && !nextPageId.equals(lastId);
         if (hasNextPage) {
             ordersAdapter.showLoading(true);
             lastId = nextPageId;
-            ordersRepository.getOrders(Integer.parseInt(nextPageId), callback);
+            ordersRepository.getData(Integer.parseInt(nextPageId), callback);
         } else {
             ordersAdapter.showLoading(false);
         }
@@ -109,7 +115,7 @@ public class OrdersFragment extends Fragment {
 
     private void fetchData() {
         srl.setRefreshing(true);
-        ordersRepository.getOrders(null, callback);
+        ordersRepository.getData(null, callback);
 
     }
 
