@@ -1,10 +1,10 @@
-package ru.dostavista.android
+package ru.dostavista.android.ui.orders_list
 
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-
-import ru.dostavista.android.data.Order
+import androidx.recyclerview.widget.RecyclerView
+import ru.dostavista.android.data.order.local.Order
+import ru.dostavista.android.databinding.OrderViewHolderBinding
 
 class OrdersAdapter : RecyclerView.Adapter<OrderViewHolder>() {
 
@@ -15,8 +15,9 @@ class OrdersAdapter : RecyclerView.Adapter<OrderViewHolder>() {
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
-        return OrderViewHolder(LayoutInflater.from(parent.context)
-                .inflate(R.layout.order_view_holder, parent, false))
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = OrderViewHolderBinding.inflate(inflater, parent, false)
+        return OrderViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
