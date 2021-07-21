@@ -1,50 +1,37 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
-androidExtensions {
-    experimental = true
-}
+def version = rootProject.ext.version
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion version.compileSdk
+
     defaultConfig {
         applicationId "ru.dostavista.android"
-        minSdkVersion 15
-        targetSdkVersion 28
+        minSdkVersion version.minSdk
+        targetSdkVersion version.targetSdk
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    buildFeatures {
+        viewBinding true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    flavorDimensions "default"
-    productFlavors {
-        prod {
-            dimension "default"
-        }
-    }
 }
 
-def version = rootProject.ext.version
-
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "com.android.support:appcompat-v7:${version.support}"
-    implementation "com.android.support:design:${version.support}"
-    implementation "com.android.support:recyclerview-v7:${version.support}"
-    implementation "com.android.support.constraint:constraint-layout:${version.constraint}"
-    implementation "com.android.support:support-annotations:${version.support}"
-    implementation "com.android.support:support-v4:${version.support_v4}"
-
+    implementation "androidx.appcompat:appcompat:${version.appcompat}"
+    implementation "androidx.recyclerview:recyclerview:${version.recyclerview}"
+    implementation "com.google.android.material:material:${version.material}"
+    implementation "com.google.code.gson:gson:${version.gson}"
+    implementation "com.squareup.retrofit2:retrofit:${version.retrofit2}"
+    implementation "com.squareup.retrofit2:converter-gson:${version.retrofit2}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${version.kotlin}"
-
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
